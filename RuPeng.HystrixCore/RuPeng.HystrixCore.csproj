@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PackageProjectUrl>http://www.rupeng.com</PackageProjectUrl>
+    <Authors>yangzhongke from rupeng.com</Authors>
+    <Company>rupeng.com</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
