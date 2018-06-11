@@ -15,12 +15,12 @@ namespace HystrixCoreTests
             using (IProxyGenerator proxyGenerator = proxyGeneratorBuilder.Build())
             {
                 Person p = proxyGenerator.CreateClassProxy<Person>();
-                Console.WriteLine(p.HelloAsync("yzk").Result);
-                Console.WriteLine(p.Add(1, 2));
-                while (true)
+             //   Console.WriteLine(p.HelloAsync("yzk").Result);
+               // Console.WriteLine(p.Add(1, 2));
+               // while (true)
                 {
                     Console.WriteLine(p.HelloAsync("yzk").Result);
-                    Thread.Sleep(100);
+                    Thread.Sleep(500);
                 }
             }
         }

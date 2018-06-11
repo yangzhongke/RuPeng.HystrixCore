@@ -72,7 +72,20 @@ namespace RuPeng.HystrixCore
             {
                 if (policy == null)
                 {
-                    policy = Policy
+                    policy = Policy.NoOpAsync();//创建一个空的Policy
+                    if (EnableCircuitBreaker)
+                    {
+                        policy = policy.WrapAsync(Policy.Handle<Exception>().CircuitBreakerAsync(ExceptionsAllowedBeforeBreaking, TimeSpan.FromMilliseconds(MillisecondsOfBreak)));
+                    }
+                    if (TimeOutMilliseconds > 0)
+                    {
+                        policy = policy.WrapAsync(Policy.TimeoutAsync(() => TimeSpan.FromMilliseconds(TimeOutMilliseconds), Polly.Timeout.TimeoutStrategy.Pessimistic));
+                    }
+                    if (MaxRetryTimes > 0)
+                    {
+                        policy = policy.WrapAsync(Policy.Handle<Exception>().WaitAndRetryAsync(MaxRetryTimes, i => TimeSpan.FromMilliseconds(RetryIntervalMilliseconds)));
+                    }
+                    Policy policyFallBack = Policy
                     .Handle<Exception>()
                     .FallbackAsync(async (ctx, t) =>
                     {
@@ -85,18 +98,7 @@ namespace RuPeng.HystrixCore
                         aspectContext.ReturnValue = fallBackResult;
                     }, async (ex, t) => { });
 
-                    if (MaxRetryTimes > 0)
-                    {
-                        policy = policy.WrapAsync(Policy.Handle<Exception>().WaitAndRetryAsync(MaxRetryTimes, i => TimeSpan.FromMilliseconds(RetryIntervalMilliseconds)));
-                    }
-                    if (EnableCircuitBreaker)
-                    {
-                        policy = policy.WrapAsync(Policy.Handle<Exception>().CircuitBreakerAsync(ExceptionsAllowedBeforeBreaking, TimeSpan.FromMilliseconds(MillisecondsOfBreak)));
-                    }
-                    if (TimeOutMilliseconds > 0)
-                    {
-                        policy = policy.WrapAsync(Policy.TimeoutAsync(() => TimeSpan.FromMilliseconds(TimeOutMilliseconds), Polly.Timeout.TimeoutStrategy.Pessimistic));
-                    }
+                    policy = policyFallBack.WrapAsync(policy);
                 }
             }
 

@@ -11,7 +11,7 @@ namespace HystrixCoreTests
         [HystrixCommand(nameof(Hello1FallBackAsync), MaxRetryTimes = 3, EnableCircuitBreaker = true)]
         public virtual async Task<string> HelloAsync(string name)//需要是虚方法
         {
-            Console.WriteLine("hello" + name);
+            Console.WriteLine("尝试执行HelloAsync" + name);
             String s = null;
             s.ToString();
             return "ok" + name;
