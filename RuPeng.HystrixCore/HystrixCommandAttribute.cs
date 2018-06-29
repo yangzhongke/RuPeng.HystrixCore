@@ -2,6 +2,8 @@
 using AspectCore.DynamicProxy;
 using System.Threading.Tasks;
 using Polly;
+using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace RuPeng.HystrixCore
 {
@@ -44,7 +46,7 @@ namespace RuPeng.HystrixCore
 
         public int CacheTTLMilliseconds { get; set; } = 0;
 
-        private Policy policy;
+        private static ConcurrentDictionary<MethodInfo, Policy> policies = new ConcurrentDictionary<MethodInfo, Policy>();
 
         private static readonly Microsoft.Extensions.Caching.Memory.IMemoryCache memoryCache
 = new Microsoft.Extensions.Caching.Memory.MemoryCache(new Microsoft.Extensions.Caching.Memory.MemoryCacheOptions());
@@ -64,11 +66,10 @@ namespace RuPeng.HystrixCore
         {
             //一个HystrixCommand中保持一个policy对象即可
             //其实主要是CircuitBreaker要求对于同一段代码要共享一个policy对象
-            //根据反射原理，同一个方法就对应一个HystrixCommandAttribute，无论几次调用，
-            //而不同方法对应不同的HystrixCommandAttribute对象，天然的一个policy对象共享
-            //因为同一个方法共享一个policy，因此这个CircuitBreaker是针对所有请求的。
-            //Attribute也不会在运行时再去改变属性的值，共享同一个policy对象也没问题
-            lock (this)//因为Invoke可能是并发调用，因此要确保policy赋值的线程安全
+            //根据反射原理，同一个方法的MethodInfo是同一个对象，但是对象上取出来的HystrixCommandAttribute
+            //每次获取的都是不同的对象，因此以MethodInfo为Key保存到policies中，确保一个方法对应一个policy实例
+            policies.TryGetValue(context.ServiceMethod,out Policy policy);
+            lock (policies)//因为Invoke可能是并发调用，因此要确保policies赋值的线程安全
             {
                 if (policy == null)
                 {
@@ -99,6 +100,8 @@ namespace RuPeng.HystrixCore
                     }, async (ex, t) => { });
 
                     policy = policyFallBack.WrapAsync(policy);
+                    //放入
+                    policies.TryAdd(context.ServiceMethod,policy);
                 }
             }
 
