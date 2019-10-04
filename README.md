@@ -22,7 +22,7 @@ namespace HystrixCoreTests
                 Person p = proxyGenerator.CreateClassProxy<Person>();
                 Console.WriteLine(p.HelloAsync("yzk").Result);
             }
-			Console.ReadKey();
+            Console.ReadKey();
         }
     }
 }
