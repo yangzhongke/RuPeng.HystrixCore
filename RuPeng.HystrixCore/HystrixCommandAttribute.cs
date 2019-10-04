@@ -91,7 +91,9 @@ namespace RuPeng.HystrixCore
                     .FallbackAsync(async (ctx, t) =>
                     {
                         AspectContext aspectContext = (AspectContext)ctx["aspectContext"];
-                        var fallBackMethod = context.ServiceMethod.DeclaringType.GetMethod(this.FallBackMethod);
+                        //var fallBackMethod = context.ServiceMethod.DeclaringType.GetMethod(this.FallBackMethod);
+                        //merge this issue: https://github.com/yangzhongke/RuPeng.HystrixCore/issues/2
+                        var fallBackMethod = context.ImplementationMethod.DeclaringType.GetMethod(this.FallBackMethod);
                         Object fallBackResult = fallBackMethod.Invoke(context.Implementation, context.Parameters);
                         //不能如下这样，因为这是闭包相关，如果这样写第二次调用Invoke的时候context指向的
                         //还是第一次的对象，所以要通过Polly的上下文来传递AspectContext

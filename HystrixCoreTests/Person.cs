@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HystrixCoreTests
 {
-    public class Person//需要public类
+    public class Person : IPerson//需要public类
     {
         [HystrixCommand(nameof(Hello1FallBackAsync), MaxRetryTimes = 3, EnableCircuitBreaker = true)]
         public virtual async Task<string> HelloAsync(string name)//需要是虚方法
